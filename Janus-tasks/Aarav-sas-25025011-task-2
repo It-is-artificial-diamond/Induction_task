@@ -1,0 +1,98 @@
+const int greenLED = 2;   // Green LED for Ascending
+const int yellowLED = 3;  // Yellow LED for Apogee
+const int redLED = 4;     // Red LED for Descending
+const int buzzerPin = 5;  // Buzzer
+
+const int forceSensorPin = A0; // input to A0
+
+const float maxanalog = 1023.0;  //Got a lot of problems here
+// because when i entered max value as 10, 
+// the serial monitor was only reading around 8.90
+const float maxforce = 8.93; // so set max value to 8.93
+
+float previousforce = 0.0; 
+bool apogeecurrent = false; // I was not getting this logic, took help from friend
+
+const float apogeemin = 8.43;
+const float apogeemax = 8.93; 
+
+const float buzzermin = maxforce - (0.5 / 2); // I set 0.25 range for buzzre 
+const float buzzermax = maxforce;
+
+enum DeviceState {
+  GROUND = 0,
+  ASCENDING = 1,  
+  APOGEE = 2,     
+  DESCENDING = 3  
+};
+
+DeviceState currentState = GROUND;
+
+
+void setup() {
+  Serial.begin(9600); // I didnt know this, because i didnt see your reference becasue it was too long
+  // took me a few videos 
+  pinMode(greenLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+  digitalWrite(greenLED, LOW);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+}
+
+void loop() {
+  int rawAnalogValue = analogRead(forceSensorPin); // Had to use GPT for this, wasn't able to get the force value correct without this
+  float currentforce = (rawAnalogValue / maxanalog) * 10.0; // GPT only gave the formula, i didnt know it was linear variation
+
+  DeviceState newState; 
+
+ if (currentforce >= apogeemin && currentforce <= apogeemax) {
+    newState = APOGEE;
+   
+   if (currentforce >= buzzermin && currentforce <= buzzermax && !apogeecurrent) {
+      tone(buzzerPin, 1000, 500);     
+    }
+   }
+  else if (currentforce > previousforce ) {
+    newState = ASCENDING;
+  }
+  else if (currentforce < previousforce ) {
+    newState = DESCENDING;
+  }
+  else {
+     newState = currentState;
+    }
+  
+  currentState = newState; 
+
+  digitalWrite(greenLED, LOW);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+ 
+ if (currentState == ASCENDING) {
+    digitalWrite(greenLED, HIGH); // Green LED for ascending
+    Serial.print("State: ASCENDING ");
+  } else if (currentState == APOGEE) {
+    digitalWrite(yellowLED, HIGH); // Yellow LED for apogee
+    Serial.print("State: APOGEE ");
+  } else if (currentState == DESCENDING) {
+    digitalWrite(redLED, HIGH); // Red LED for descending
+    Serial.print("State: DESCENDING ");
+  }
+
+  Serial.print("Force Sensor Reading: ");
+  Serial.print(currentforce, 2); // didn't know we had to write 2 for 2 decimal places, had to see misc videos
+  Serial.print(" Raw analog vaule: "); 
+  Serial.print(rawAnalogValue);        
+  Serial.print(" | Previous Force: ");
+  Serial.print(previousforce, 2); 
+  Serial.println();// didn't know this was used to go to next 
+  // line in serial monitor, has to go to arduino language reference
+
+  
+  previousforce = currentforce;
+
+  delay(100); 
+}
