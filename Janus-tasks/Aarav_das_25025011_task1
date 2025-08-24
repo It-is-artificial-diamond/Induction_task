@@ -1,0 +1,59 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import time 
+from matplotlib.animation import FuncAnimation
+choice1= input("do you want to see both the graphs together or not?? >>>  ")
+plt.style.use('fivethirtyeight') # wanted to use darkbackground, but even after changing grid colour, it was not showing the grid.
+
+if choice1 =='yes':
+    fig, ax= plt.subplots()  # don't even know why i used this, i didn't even make 2 different graphs side by side, probably should have just used plot, but then this is more versatile
+    def animate(i):
+        ax.clear()
+        df = pd.read_excel("JANUS_INFO_TEST_1.xlsx")
+        print(f"Time: {df['time'].iloc[i-1]}, Altitude: {df['Altitude'].iloc[i-1]}, Velocity: {df['Velocity'].iloc[i-1]}") # could have used loc() as well, but iloc is more versatile
+        plt.plot(df['time'][:i], df['Altitude'][:i], color='m', marker='o',label= 'Altitude Line', linewidth=3)
+        plt.xlabel('Time (s)')
+        plt.ylabel('Altitude (m) and Velocity (m/s)')
+        plt.plot(df['time'][:i], df['Velocity'][:i], color='b', marker='.',label='Velocity Line')
+        plt.title('Altitude and Velocity vs Time')
+        plt.legend(loc='upper left') 
+       
+    
+else:
+    choice2 = int(input(" do you want to see altitude vs time or velocity vs time?? >>> Choose 1 and 2 respectively "))
+
+    if choice2 == 1:  
+        fig, ax= plt.subplots() 
+        def animate(i):
+            ax.clear()
+            df = pd.read_excel("JANUS_INFO_TEST_1.xlsx")
+            print(f"Time: {df['time'].iloc[i-1]}, Altitude: {df['Altitude'].iloc[i-1]}")
+            plt.plot(df['time'][:i], df['Altitude'][:i], color='m', marker='.', label= 'Altitude Line')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Altitude (m)')
+            plt.title("Altitude vs Time" )
+            plt.grid(True)
+            plt.tight_layout()      
+            plt.legend(loc='upper left')
+            
+
+    elif choice2 == 2:
+        fig, ax= plt.subplots()
+        def animate(i):
+            ax.clear()
+            df = pd.read_excel("JANUS_INFO_TEST_1.xlsx")
+            print(f"Time: {df['time'].iloc[i-1]}, Velocity: {df['Velocity'].iloc[i-1]}")
+            plt.plot(df['time'][:i], df['Velocity'][:i], color='r', marker='.', label= 'Velocity Line')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Velocity (m/s)')
+            plt.grid(True)
+            plt.tight_layout()      
+            plt.legend(loc='upper left')
+
+plt.grid(True)
+plt.tight_layout()      
+ani = FuncAnimation(plt.gcf(), animate, interval=1000)
+plt.show()
+plt.close()
+
+
